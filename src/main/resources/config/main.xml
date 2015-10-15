@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	<!-- Esse PropertiesFactoryBean gerará um bean do tipo Properties com os valores do arquivo -->
+	<bean id="defaultProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<property name="ignoreResourceNotFound" value="true"/>
+		<property name="localOverride" value="true"/>
+		<property name="locations">
+			<list>
+				<!-- Obtém o arquivo de propriedades padrão -->
+				<value>classpath:env/environment_DEFAULT.properties</value>
+				
+				<!-- Obtém o arquivo de propriedades através da variável de ambiente -->
+				<!-- Adiciona e sobrescreve os valores anteriormente setados -->
+				<value>classpath:env/environment_${CUSTOM_ENV:}.properties</value>
+				
+				<!-- Obtém o arquivo de propriedades externo de acordo com a variável -->
+				<!-- Adiciona e sobrescreve os valores anteriormente setados -->
+				<value>file:${CUSTOM_EXTERNAL_CONFIG:}</value>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- Instanciando um PropertyPlaceholder personalizado com os valores Properties anterior -->
+	<bean id="placeholderConfig" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="ignoreResourceNotFound" value="true" />
+		<property name="ignoreUnresolvablePlaceholders" value="true" />
+		<property name="localOverride" value="true" />
+		<property name="properties" ref="defaultProperties" />
+	</bean>
+	
+	<!-- Criando um bean com valores obtidos de várias formas -->
+	<bean class="com.jesjobom.service.CustomService" id="customService">
+		<!-- Valor obtido através do PropertyPlaceholder padrão -->
+		<property name="customEnvName" value="${CUSTOM_ENV:}" />
+		
+		<!-- Valor obtido através do PropertyPlaceholder padrão -->
+		<property name="customConfigFile" value="${CUSTOM_EXTERNAL_CONFIG:}" />
+		
+		<!-- Valor obtido através do Properties gerado -->
+		<property name="prop1" value="#{defaultProperties['prop1.int']}" />
+		
+		<!-- Valor obtido através do PropertyPlaceholder gerado -->
+		<property name="prop2" value="${prop2.bool:}" />
+		
+		<!-- Valor obtido através do PropertyPlaceholder gerado -->
+		<property name="prop3" value="${prop3:default}" />
+	</bean>
+</beans>
